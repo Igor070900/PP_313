@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+</head>
+<body>
+<div>
+    <h1>Unexpected Error</h1>
+    <p>An error occurred.</p>
+    <br>
+    <th:block th:each="msg : ${messages}">
+        <p th:text="${msg}"></p>
+    </th:block>
+
+</div>
+</body>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+        'Open Sans', 'Helvetica Neue', 'sans-serif';
+        box-sizing: border-box;
+    }
+
+    body {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    div {
+        width: 500px;
+    }
+</style>
+
+</html>

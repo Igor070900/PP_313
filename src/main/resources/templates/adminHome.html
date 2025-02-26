@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin panel</title>
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+          crossorigin="anonymous">
+</head>
+<body>
+
+
+<div class="modal fade" id="editUserModal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Edit user</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form th:method="POST" th:action="@{/admin/{id}/edit(id=${id})}" th:object="${userToAdd}" id="editForm">
+                <div class="modal-body col-12 d-flex align-items-center flex-column">
+                    <input type="hidden" name="id" value="" id="editUserId">
+                    <p class="m-0">First name</p>
+                    <input class="col-6 border rounded py-1 mb-3" th:field="*{name}"
+                           type="text" id="editName" placeholder="First name">
+
+                    <p class="m-0">Last name</p>
+                    <input class="col-6 border rounded py-1 mb-3" th:field="*{lastname}"
+                           type="text" id="editLastname" placeholder="Last name">
+
+                    <p class="m-0">Age</p>
+                    <input class="col-6 border rounded py-1 mb-3" th:field="*{age}"
+                           type="text" id="editAge" placeholder="Age">
+
+                    <p class="m-0">Email</p>
+                    <input class="col-6 border rounded py-1 mb-3" th:field="*{email}"
+                           type="email" id="editEmail" placeholder="Email">
+
+                    <p class="m-0">Password</p>
+                    <input class="col-6 border rounded py-1 mb-3" th:field="*{password}"
+                           type="password" id="password" placeholder="Password">
+
+                    <p class="m-0">
+                        Role
+                    </p>
+
+                    <div class="col-4 mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="role"
+                                   id="userCheckRole" value="USER">
+                            <label class="form-check-label" for="userCheckRole">USER</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="role"
+                                   id="adminCheckRole" value="ADMIN">
+                            <label class="form-check-label" for="adminCheckRole">ADMIN</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Edit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="removeUserModalLabel">Delete user</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body col-12 d-flex align-items-center flex-column">
+                <p class="m-0">ID</p>
+                <input class="col-6 border rounded py-1 mb-3" type="text" id="deleteUserId" readonly>
+                <p class="m-0">First name</p>
+                <input class="col-6 border rounded py-1 mb-3" type="text" id="deleteName" readonly>
+
+                <p class="m-0">Last name</p>
+                <input class="col-6 border rounded py-1 mb-3" type="text" id="deleteLastname" readonly>
+
+                <p class="m-0">Age</p>
+                <input class="col-6 border rounded py-1 mb-3" type="text" id="deleteAge" readonly>
+
+                <p class="m-0">Email</p>
+                <input class="col-6 border rounded py-1 mb-3" type="email" id="deleteEmail" readonly>
+
+                <p class="m-0">Roles</p>
+                <input class="col-6 border rounded py-1 mb-3" type="email" id="deleteRoles" readonly>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger">
+                    <a th:href="@{/admin/{id}/remove(id=${id})}" id="deleteBtn">Delete</a>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container-fluid bg-dark px-4 py-2 d-flex justify-content-between align-items-center"
+     id="header">
+    <p class="text-white m-0">
+        <span th:text="${userToShow.email}">email@mail.ru</span>
+        with roles:
+        <span th:text="${#strings.listJoin(userToShow.roles, ' ')}">
+                <span th:each="role : ${userToShow.roles}">
+                    <span th:text="${role.role}">Roles</span> &nbsp;
+                </span>
+            </span>
+    </p>
+
+    <form th:action="@{/logout}" method="post">
+        <button type="submit" class="text-secondary">Logout</button>
+    </form>
+</div>
+
+<div class="container-fluid m-0 p-0 d-inline-flex justify-content-between align-items-center custom"
+     id="sections">
+    <div class="col-2 bg-white m-0 p-0 customDiv">
+        <div class="container-fluid m-0 p-0 pt-2">
+            <p class="bg-primary text-white pl-3 py-2 m-0 btn-custom" style="cursor: pointer;">
+                Admin
+            </p>
+            <p class="bg-white text-primary pl-3 py-2 m-0 btn-custom" style="cursor: pointer;">
+                User
+            </p>
+        </div>
+    </div>
+
+    <div class="col-10 px-4 py-3 customDiv" id="adminPanel">
+        <h2>Admin panel</h2>
+
+        <ul class="nav nav-tabs">
+            <li class="nav-item" id="showUsersList" style="cursor: pointer;">
+                <p class="nav-link text-primary m-0 active">Users table</p>
+            </li>
+            <li class="nav-item" id="showAddUserForm" style="cursor: pointer;">
+                <p class="nav-link m-0">New User</p>
+            </li>
+        </ul>
+        <div class="border" id="usersList">
+            <p class="alert-secondary py-2 pl-3 border-bottom">All users</p>
+
+            <div class="container-fluid px-4 pb-4" id="usersTable">
+                <table class="col-12">
+                    <tr class="border-top">
+                        <td class="py-2 pl-2">ID</td>
+                        <td>First Name</td>
+                        <td>Last Name</td>
+                        <td>Age</td>
+                        <td>Email</td>
+                        <td>Role</td>
+                        <td>Edit</td>
+                        <td>Delete</td>
+                    </tr>
+                    <tr th:block th:each="user : ${usersList}" class="border-top alert-secondary">
+                        <td class="py-2 pl-2"th:text="${user.id}">3</td>
+                        <td th:text="${user.name}">name</td>
+                        <td th:text="${user.lastname}">lastname</td>
+                        <td th:text="${user.age}">age</td>
+                        <td th:text="${user.email}">email</td>
+                        <td th:text="${#strings.listJoin(user.roles, ' ')}" class="py-2">
+                                <span th:each="role : ${user.roles}">
+                                    <span th:text="${role.role}">Roles</span> &nbsp;
+                                </span>
+                        </td>
+
+                        <td class="py-2">
+                            <button class="btn btn-info open-edit-modal" data-toggle="modal"
+                                    data-target="#editUserModal"
+                                    th:attr="data-id=${user.id}, data-name=${user.name},
+                                    data-lastname=${user.lastname},
+                                        data-age=${user.age}, data-email=${user.email},
+                                        data-roles=${#strings.listJoin(user.roles, ',')}">
+                                Edit
+                            </button>
+                        </td>
+
+                        <td class="py-2">
+                            <button class="btn btn-danger open-delete-modal" data-toggle="modal"
+                                    data-target="#deleteUserModal"
+                                    th:attr="data-id=${user.id}, data-name=${user.name},
+                                    data-lastname=${user.lastname},
+                                        data-age=${user.age}, data-email=${user.email},
+                                        data-roles=${#strings.listJoin(user.roles, ' ')}">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="border" id="addUserForm" style="display: none;">
+            <p class="alert-secondary py-2 pl-3 m-0 border-bottom">Add user</p>
+            <form th:method="POST" th:action="@{/admin/add}" th:object="${userToAdd}"
+                  class="bg-white d-flex flex-column align-items-center py-3">
+
+                <p class="m-0">First name</p>
+                <input class="col-4 border rounded py-1 mb-3" th:field="*{name}" type="text"
+                       id="name" placeholder="First name">
+
+                <p class="m-0">Last name</p>
+                <input class="col-4 border rounded py-1 mb-3" th:field="*{lastname}" type="text"
+                       id="lastname" placeholder="Last name">
+
+                <p class="m-0">Age</p>
+                <input class="col-4 border rounded py-1 mb-3" th:field="*{age}" type="text"
+                       id="age" placeholder="Age">
+
+                <p class="m-0">Email</p>
+                <input class="col-4 border rounded py-1 mb-3" th:field="*{email}" type="email"
+                       id="email" placeholder="Email">
+
+                <p class="m-0">Password</p>
+                <input class="col-4 border rounded py-1 mb-3" th:field="*{password}" type="password"
+                       id="password" placeholder="Password">
+
+                <p class="m-0">Role</p>
+                <div class="col-4 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="role"
+                               id="userCheckRole" value="USER">
+                        <label class="form-check-label" for="userCheckRole">USER</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="role"
+                               id="adminCheckRole" value="ADMIN">
+                        <label class="form-check-label" for="adminCheckRole">
+                            ADMIN
+                        </label>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" type="submit">Add new user</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-10 px-4 py-3 customDiv" id="userInfo" style="display: none;">
+        <h2>User information-page</h2>
+
+        <div class="border">
+            <p class="alert-secondary py-2 pl-3 border-bottom">About user</p>
+            <div class="container-fluid px-4 pb-4">
+                <table class="col-12">
+                    <tr class="border-top">
+                        <td class="py-2 pl-2">ID</td>
+                        <td>First Name</td>
+                        <td>Last Name</td>
+                        <td>Age</td>
+                        <td>Email</td>
+                        <td>Role</td>
+                    </tr>
+                    <tr th:block th:fragment="user-info(userToShow)" class="border-top alert-secondary">
+                        <td th:text="${userToShow.id}" class="py-2 pl-2"></td>
+                        <td th:text="${userToShow.name}"></td>
+                        <td th:text="${userToShow.lastname}"></td>
+                        <td th:text="${userToShow.age}"></td>
+                        <td th:text="${userToShow.email}"></td>
+                        <td th:text="${#strings.listJoin(userToShow.roles, ' ')}" class="py-2">
+                                <span th:each="role : ${userToShow.roles}">
+                                    <span th:text="${role.role}">Roles</span> &nbsp;
+                                </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+</body>
+
+<script>
+    const BTNS = document.querySelectorAll('.btn-custom');
+    const adminPanel = document.getElementById('adminPanel');
+    const userInfo = document.getElementById('userInfo');
+
+    const navLinks = document.querySelectorAll('.nav-link');
+    const usersList = document.getElementById('usersList');
+    const addUserForm = document.getElementById('addUserForm');
+    console.log(usersList);
+    console.log(addUserForm);
+
+    function removeStyles() {
+        BTNS.forEach(el => {
+            el.classList.remove('bg-primary');
+            el.classList.remove('text-white');
+
+            el.classList.add('bg-white');
+            el.classList.add('text-primary');
+        })
+    }
+
+    function removeActive() {
+        navLinks.forEach(el => {
+            el.classList.remove('active')
+            el.classList.remove('text-primary');
+            el.classList.add('text-black');
+
+        })
+    }
+
+    BTNS.forEach(el => {
+        el.addEventListener('click', () => {
+            removeStyles();
+
+            el.classList.remove('bg-white');
+            el.classList.remove('text-primary');
+
+            el.classList.add('bg-primary');
+            el.classList.add('text-white');
+
+            if (el.innerHTML == 'Admin') {
+                adminPanel.style.display = 'block';
+                userInfo.style.display = 'none';
+            }
+
+            if (el.innerHTML == 'User') {
+                adminPanel.style.display = 'none';
+                userInfo.style.display = 'block';
+            }
+        })
+    })
+
+    navLinks.forEach(el => {
+        el.addEventListener('click', ()=> {
+            removeActive();
+            el.classList.add('active');
+            el.classList.remove('text-black');
+            el.classList.add('text-primary');
+
+            if (el.innerHTML == 'Users table') {
+                console.log('Users table')
+                usersList.style.display = 'block';
+                addUserForm.style.display = 'none';
+            }
+
+            if (el.innerHTML == 'New User') {
+                console.log('New User')
+                usersList.style.display = 'none';
+                addUserForm.style.display = 'block';
+            }
+        })
+    })
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('.open-edit-modal').on('click', function () {
+            var userId = $(this).data('id'); // Получаем id пользователя
+            console.log(userId);
+
+            // Передаем id в скрытое поле формы
+            $('#id').val(userId);
+            var editAction = `/admin/${userId}/edit`;
+            console.log(editAction)
+            $('#editForm').attr('action', editAction);
+            $('#editUserId').val(userId)
+
+            // Остальные поля
+            var name = $(this).data('name');
+            var lastname = $(this).data('lastname');
+            var age = $(this).data('age');
+            var email = $(this).data('email');
+            var roles = $(this).data('roles').split(',');
+
+            $('#editName').val(name);
+            $('#editLastname').val(lastname);
+            $('#editAge').val(age);
+            $('#editEmail').val(email);
+
+            // Показ модального окна
+            $('#editUserModal').modal('show');
+        });
+
+        $('.open-delete-modal').on('click', function () {
+            var userId = $(this).data('id'); // Получаем id пользователя
+
+            // Передаем id в скрытое поле формы
+            $('#id').val(userId);
+            var deleteHref = `/admin/${userId}/remove`;
+            $('#deleteBtn').attr('href', deleteHref)
+
+
+            // Остальные поля
+            var name = $(this).data('name');
+            var lastname = $(this).data('lastname');
+            var age = $(this).data('age');
+            var email = $(this).data('email');
+            var roles = $(this).data('roles');
+            console.log(roles);
+
+
+            // Устанавливаем значения для полей
+            $('#deleteUserId')
+                .attr('placeholder', userId)
+            $('#deleteName')
+                .attr('placeholder', name);  // Заменяем placeholder значением name
+            $('#deleteLastname')
+                .attr('placeholder', lastname);  // Заменяем placeholder значением lastname
+            $('#deleteAge')
+                .attr('placeholder', age);  // Заменяем placeholder значением age
+            $('#deleteEmail')
+                .attr('placeholder', email);  // Заменяем placeholder значением email
+            $('#deleteRoles')
+                .attr('placeholder', roles);
+
+            // Показ модального окна
+            $('#deleteUserModal').modal('show');
+        });
+
+    });
+</script>
+
+<style>
+    body {
+        background: rgb(244, 244, 244);
+        overflow: hidden;
+    }
+
+    button {
+        background: none;
+        border: none;
+    }
+
+    .custom {
+        height: 95vh;
+    }
+
+    .customDiv {
+        height: 100%;
+    }
+
+    #usersTable tr:nth-child(odd) {
+        background: #fff;
+    }
+
+    a {
+        width: 100%;
+        height: 100%;
+        color: #fff;
+        text-decoration: none;
+    }
+
+    a:hover{
+        color: #fff;
+        text-decoration: none;
+    }
+
+</style>
+
+</html>
